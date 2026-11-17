@@ -13,15 +13,19 @@ MAX_TURNS = 10
 
 class Chatbot:
     def __init__(self):
-        self.messages = [{"role": "system", "content": "你是客服助手，回答简洁友好"}]
-
+        SYSTEM_PROMPT = """你是保险理赔客服助手。回答要求：
+        1. 只依据已知信息回答；不确定时说「这个我需要为您转接专员核实」，不得猜测；
+        2. 不得承诺赔付结果，只能说「需提交材料后由理赔审核判定」；
+        3. 涉及金额、比例、时效，必须说明「以条款为准」；
+        4. 回答控制在 3 句话以内，语气平和口语化。"""
+        self.messages = [{"role": "system", "content":SYSTEM_PROMPT}]
         self.headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
 
 
     def chat(self, question: str):
         self.messages.append({"role": "user", "content": question})
         history = [self.messages[0]] + self.messages[1:][-(MAX_TURNS * 2):]
-        data = {"model": "deepseek-chat", "messages": history, "temperature": 0.1}
+        data = {"model": "deepseek-chat", "messages": history, "temperature": 0.1,"max_tokens":300,}
 
         for attempt in range(3):
             try:
