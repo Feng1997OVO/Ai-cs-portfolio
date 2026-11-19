@@ -18,7 +18,8 @@ menu="""
 ##       2.修改购物车       ##   
 ##       3.删除购物车       ##
 ##       4.查询购物车       ##
-##       5.退出购物车       ##
+##       5.清空购物车       ##
+##       6.退出购物车       ##
 ############################
 """
 
@@ -52,6 +53,12 @@ def show_cart(cart):
     lines=[f"{name}|单价{item['price']}|数量{item['num']}"
            for name, item in cart.items()]
     return "\n".join(lines)
+def clear_cart(cart):
+    """清空购物车，返回提示语"""
+    if not cart:
+        return"购物车是空的"
+    cart.clear()        #原地清空这个字典对象
+    return"购物车已经清空"
 
 CART_FILE="cart.json"
 
@@ -71,7 +78,7 @@ def load_cart(path=CART_FILE):
 def main(cart):
     while True:
         print(menu)
-        choice = input("请选择您要执行的操作1-5")
+        choice = input("请选择您要执行的操作1-6")
 
         match choice:
             case "1":       #添加购物车
@@ -94,7 +101,14 @@ def main(cart):
                 save_cart(cart)
             case "4":  # 查询购物车
                 print(show_cart(cart))
-            case "5":  # 退出购物车
+            case "5":  #清空购物车
+                if input("请问是否确认要清空购物车？（y/n）")=="y":
+                    print(clear_cart(cart))
+                    save_cart(cart)
+                else:
+                    print("已经取消")
+
+            case "6":  # 退出购物车
                 print("再见")
                 break
             case _:  # 匹配其他所有情况
