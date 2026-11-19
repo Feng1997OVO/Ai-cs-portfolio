@@ -8,8 +8,8 @@
 #5.退出购物车 谢谢使用
 
 #结构 shopping_cart={"苹果":{"price":10,"num":2},"香蕉":{"price":5,"num":4}}
+import json
 
-shopping_cart={}
 #1.制作菜单
 print("欢迎使用购物车管理系统~！")
 menu="""   
@@ -53,7 +53,22 @@ def show_cart(cart):
            for name, item in cart.items()]
     return "\n".join(lines)
 
-def main():
+CART_FILE="cart.json"
+
+def save_cart(cart,path=CART_FILE):
+    """把购物车写进文件里"""
+    with open(path,'w',encoding="utf-8") as f:
+        json.dump(cart,f,ensure_ascii=False,indent=2)
+
+def load_cart(path=CART_FILE):
+    """从文件读取购物车。文件如果不存在就返回空字典。"""
+    try:
+        with open(path,'r',encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+def main(cart):
     while True:
         print(menu)
         choice = input("请选择您要执行的操作1-5")
@@ -63,25 +78,28 @@ def main():
                 name=input("请输入商品的名称")
                 price=float(input("请输入商品的价格"))
                 num=int(input("请输入商品的数量"))
-                print(add_item(shopping_cart,name,price,num))
+                print(add_item(cart,name,price,num))
+                save_cart(cart)
 
             case "2":  # 修改购物车
                 name = input("请输入要修改商品的名称")
                 price = float(input("请输入商品最新的价格"))
                 num = int(input("请输入商品最新的数量"))
-                print(update_item(shopping_cart,name,price,num))
+                print(update_item(cart,name,price,num))
+                save_cart(cart)
 
             case "3":  # 删除购物车
                 name = input("请输入要删除商品的名称")
-                print(delete_item(shopping_cart,name))
+                print(delete_item(cart,name))
+                save_cart(cart)
             case "4":  # 查询购物车
-                print(show_cart(shopping_cart))
+                print(show_cart(cart))
             case "5":  # 退出购物车
                 print("再见")
                 break
             case _:  # 匹配其他所有情况
                 print("输入错误请重新输入")
 if __name__=="__main__":
-    main()
+    main(load_cart())
 
 
