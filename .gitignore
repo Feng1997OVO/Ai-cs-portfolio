@@ -2,3 +2,5 @@
 .idea/
 .venv/
 _drafts/
+cart.json
+__pycache__/

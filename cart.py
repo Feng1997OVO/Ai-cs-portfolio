@@ -84,7 +84,7 @@ def main(cart):
             case "1":       #添加购物车
                 name=input("请输入商品的名称")
                 price=float(input("请输入商品的价格"))
-                num=int(input("请输入商品的数量"))
+                num=int(input("请输入商品的数量"))1
                 print(add_item(cart,name,price,num))
                 save_cart(cart)
 
