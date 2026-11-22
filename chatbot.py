@@ -1,3 +1,4 @@
+import datetime
 import os
 import requests
 import time
@@ -9,11 +10,7 @@ API_KEY=os.getenv("DEEPSEEK_API_KEY")
 
 FALLBACK = "抱歉，您的问题暂时无法核实，这边为您转接专员人工服务"
 MAX_TURNS = 10
-
-
-class Chatbot:
-    def __init__(self):
-        SYSTEM_PROMPT = """你是保险理赔客服助手。回答要求：
+SYSTEM_PROMPT = """你是保险理赔客服助手。回答要求：
 1. 信息不全时先反问补充（险种、住院时间、是否首次投保），不要急着给结论；
 2. 只依据已知信息回答；不确定时说「这个我需要为您转接专员核实」，不得猜测；
 3. 不得承诺赔付结果，只能说「需提交材料后由理赔审核判定」；
@@ -24,7 +21,13 @@ class Chatbot:
 8.涉及时间的，先算出间隔天数再判断。
 9.信息足够时要给带前提的判断（若A则X，若B则Y），不要把判断全部推给审核；只有信息不足或超出权限时才转人工。"""
 
-        self.messages = [{"role": "system", "content":SYSTEM_PROMPT}]
+
+def build_system_prompt():
+    today = datetime.date.today().isoformat()
+    return f"今天是{today}.\n" + SYSTEM_PROMPT
+class Chatbot:
+    def __init__(self):
+        self.messages = [{"role": "system", "content": build_system_prompt()}]
         self.headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
 
 
