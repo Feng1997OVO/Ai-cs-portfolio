@@ -1,4 +1,5 @@
 import json
+import time
 from collections import defaultdict
 
 from extract import extract
@@ -6,20 +7,33 @@ from extract import extract
 with open("cases.json", "r", encoding="utf-8") as f:
     cases = json.load(f)
 
-stat = defaultdict(lambda: [0, 0])      # 类目 -> [正确数, 总数]
-right = 0
+stat = defaultdict(lambda: [0, 0])
+right = wrong = error = 0
 
 for c in cases:
-    try:
-        r = extract(c["question"])
-        actual = r["intent"]
-    except Exception as e:
-        print(f'❌ #{c["id"]} 出错：{e}')
+    actual = None
+    last_err = None
+
+    for attempt in range(3):                    # 最多试 3 次
+        try:
+            actual = extract(c["question"])["intent"]
+            break
+        except Exception as e:
+            last_err = e
+            if attempt < 2:
+                time.sleep(2)                   # 网络抖动，等两秒再来
+
+    if actual is None:
+        error += 1
+        print(f'⚠️  #{c["id"]:>2} 调用失败，不计入准确率：{last_err}')
         continue
 
     expected = c["expect_intent"]
     ok = actual == expected
-    right += ok
+    if ok:
+        right += 1
+    else:
+        wrong += 1
 
     stat[expected][1] += 1
     if ok:
@@ -28,10 +42,10 @@ for c in cases:
     flag = "✅" if ok else "❌"
     print(f'{flag} #{c["id"]:>2} 期望:{expected:<6} 实际:{actual:<6} | {c["question"][:24]}')
 
-# —— 总体 ——
-print(f"\n意图准确率：{right}/{len(cases)} = {right / len(cases) * 100:.0f}%")
+valid = right + wrong
+print(f"\n有效测试：{valid} 条（跳过 {error} 条）")
+print(f"意图准确率：{right}/{valid} = {right / valid * 100:.0f}%" if valid else "无可测数据")
 
-# —— 分类 ——
 print("\n各类准确率（按样本数排序）：")
 for k, (r, t) in sorted(stat.items(), key=lambda x: -x[1][1]):
     pct = r / t * 100

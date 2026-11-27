@@ -74,4 +74,16 @@ def extract(question: str) -> dict:
     resp = requests.post(URL, headers=headers, json=data, timeout=20)
     resp.raise_for_status()
     content = resp.json()["choices"][0]["message"]["content"]
-    return json.loads(content)
+
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        return {
+            "intent": "其他",
+            "secondary_intents": [],
+            "invalid_type": None,
+            "slots": {"product": None, "scene": None, "cause": None,
+                      "insured_at": None, "incident_at": None, "claimed": None},
+            "urgency": "normal",
+            "notes": "JSON 解析失败，已兜底",
+        }
